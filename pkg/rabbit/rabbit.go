@@ -20,7 +20,7 @@ func NewConnection(url string) *rabbitmq.Conn {
 	return conn
 }
 
-func NewConsumer(conn *rabbitmq.Conn, exchange, queueName, routingKey string, handler rabbitmq.Handler) *rabbitmq.Consumer {
+func NewConsumer(conn *rabbitmq.Conn, exchange, routingKey, queueName string, handler rabbitmq.Handler) *rabbitmq.Consumer {
 	c, err := rabbitmq.NewConsumer(conn, handler, queueName,
 		rabbitmq.WithConsumerOptionsRoutingKey(routingKey),
 		rabbitmq.WithConsumerOptionsQueueAutoDelete,
