@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"log/slog"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/robotjoosen/usvc-messsage-consumer/pkg/config"
 	"github.com/robotjoosen/usvc-messsage-consumer/pkg/rabbit"
 	"github.com/wagslane/go-rabbitmq"
@@ -63,6 +63,7 @@ func handleMessage(d rabbitmq.Delivery) (action rabbitmq.Action) {
 	)
 
 	var msg Message
+
 	err := json.Unmarshal(d.Body, &msg)
 	if err != nil {
 		dLog.Error("failed to unmarshal message")

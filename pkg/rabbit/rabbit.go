@@ -1,3 +1,4 @@
+// Package rabbit is a convenience wrapper for RabbitMQ actions.
 package rabbit
 
 import (

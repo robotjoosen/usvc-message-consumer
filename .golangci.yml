@@ -1,0 +1,95 @@
+# See https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+run:
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  gocyclo:
+    min-complexity: 20
+  dupl:
+    threshold: 200
+  misspell:
+    locale: US
+  unparam:
+    check-exported: true
+  revive:
+    severity: error # if it is not an error we care a little (but not enough to fix it)
+  depguard:
+    rules:
+      Main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - github.com/robotjoosen
+          - github.com/wagslane/go-rabbitmq
+          - github.com/spf13/viper
+          - github.com/mitchellh/mapstructure
+          - github.com/google/uuid
+      Tests:
+        files:
+          - $test
+        allow:
+          - $gostd
+          - github.com/robotjoosen
+          - github.com/stretchr/testify
+
+linters:
+  enable-all: true
+  disable:
+    - containedctx
+    - lll
+    - maligned
+    - gochecknoglobals
+    - gomnd
+    - wrapcheck
+    - paralleltest
+    - forbidigo
+    - exhaustivestruct
+    - interfacer # deprecated
+    - forcetypeassert
+    - scopelint # deprecated
+    - ifshort # too many false positives
+    - golint # deprecated
+    - varnamelen
+    - tagliatelle
+    - errname
+    - ireturn
+    - exhaustruct
+    - nonamedreturns
+    - nosnakecase
+    - structcheck
+    - varcheck
+    - deadcode
+    - testableexamples
+    - dupword
+    - dupl # annoying as f*
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - linters:
+        - gomnd
+        - goconst
+        - goerr113
+        - noctx
+        - funlen
+        - dupl
+        - structcheck
+        - unused
+        - unparam
+        - nosnakecase
+        - gosec
+        - bodyclose
+        - cyclop
+        - gocognit
+        - errcheck
+      path: "_test.go"
+    - linters:
+        - funlen # they can be as long as they want
+        - errcheck # error checking omitted for brevity
+        - gosec
+      path: "example_"

@@ -1,3 +1,4 @@
+// Package config applies environment vars to a struct.
 package config
 
 import (
