@@ -1,4 +1,4 @@
-FROM golang:1.21 as builder
+FROM golang:1.22 as builder
 
 ENV TZ=Etc/UCT
 ENV GO111MODULE=on
@@ -11,7 +11,14 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o app .
+RUN go build \
+    -ldflags " \
+    -X 'main.buildName=$BUILD_NAME' \
+    -X 'main.buildVersion=$BUILD_VERSION' \
+    -X 'main.buildCommit=$BUILD_COMMIT' \
+    " \
+    -trimpath \
+    -o app .
 
 WORKDIR /dist
 
