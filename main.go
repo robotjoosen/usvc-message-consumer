@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-	"github.com/robotjoosen/usvc-messsage-consumer/pkg/config"
-	"github.com/robotjoosen/usvc-messsage-consumer/pkg/rabbit"
+	"github.com/robotjoosen/usvc-message-consumer/pkg/config"
+	"github.com/robotjoosen/usvc-message-consumer/pkg/rabbit"
 	"github.com/wagslane/go-rabbitmq"
 )
 

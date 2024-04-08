@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/robotjoosen/usvc-messsage-consumer/pkg/config"
+	"github.com/robotjoosen/usvc-message-consumer/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
