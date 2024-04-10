@@ -70,9 +70,9 @@ func main() {
 
 func handleMessage(d rabbitmq.Delivery) (action rabbitmq.Action) {
 	dLog := slog.With(
-		slog.String("routing_key", d.RoutingKey),
 		slog.String("message_id", d.MessageId),
 		slog.String("correlation_id", d.CorrelationId),
+		slog.String("routing_key", d.RoutingKey),
 	)
 
 	var msg Message
@@ -84,7 +84,7 @@ func handleMessage(d rabbitmq.Delivery) (action rabbitmq.Action) {
 		return rabbitmq.NackDiscard
 	}
 
-	dLog.Info("received message",
+	dLog.Info("message received",
 		slog.String("action_type", msg.ActionType),
 		slog.Any("record", msg.Data),
 	)
