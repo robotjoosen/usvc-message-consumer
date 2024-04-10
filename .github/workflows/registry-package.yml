@@ -24,6 +24,10 @@ jobs:
 
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@v4
+        env:
+          BUILD_NAME: ${{ github.repository }}
+          BUILD_VERSION: ${{ github.ref_name }}
+          BUILD_COMMIT: ${{ github.sha }}
         with:
           name: ${{ github.repository }}
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -31,3 +35,4 @@ jobs:
           registry: ghcr.io
           dockerfile: Dockerfile
           tags: ${{ steps.get_version.outputs.VERSION }}
+          buildargs: BUILD_NAME,BUILD_VERSION,BUILD_COMMIT
