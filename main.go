@@ -12,6 +12,12 @@ import (
 	"github.com/wagslane/go-rabbitmq"
 )
 
+var (
+	buildName    = "api-message-generator"
+	buildVersion = "dev"
+	buildCommit  = "n/a"
+)
+
 type (
 	Settings struct {
 		RabbitMQAddress     string `mapstructure:"MQ_ADDRESS"`
@@ -43,6 +49,13 @@ func main() {
 
 		os.Exit(1)
 	}
+
+	slog.Info("service started",
+		slog.String("build_name", buildName),
+		slog.String("build_version", buildVersion),
+		slog.String("build_commit", buildCommit),
+		slog.Any("settings", s),
+	)
 
 	rabbit.NewConsumer(
 		rabbit.NewConnection(s.RabbitMQAddress),

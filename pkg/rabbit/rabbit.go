@@ -34,5 +34,11 @@ func NewConsumer(conn *rabbitmq.Conn, exchange, routingKey, queueName string, ha
 		os.Exit(1)
 	}
 
+	slog.Info("consumer created",
+		slog.String("queue_name", queueName),
+		slog.String("exchange", exchange),
+		slog.String("routing_key", routingKey),
+	)
+
 	return c
 }
