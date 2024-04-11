@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/grafana/pyroscope-go"
 	"log/slog"
+	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"runtime"
 
 	"github.com/google/uuid"
+	"github.com/grafana/pyroscope-go"
 	_ "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
+	"github.com/hellofresh/health-go/v5"
+	"github.com/robotjoosen/usvc-message-consumer/internal/server"
 	"github.com/robotjoosen/usvc-message-consumer/pkg/config"
 	"github.com/robotjoosen/usvc-message-consumer/pkg/rabbit"
 	"github.com/wagslane/go-rabbitmq"
@@ -28,6 +32,8 @@ type (
 		RabbitMQRoutingKey  string `mapstructure:"MQ_ROUTING_KEY"`
 		RabbitMQExchange    string `mapstructure:"MQ_EXCHANGE"`
 		RabbitMQQueuePrefix string `mapstructure:"MQ_QUEUE_PREFIX"`
+		ServerIP            string `mapstructure:"SERVER_IP"`
+		ServerPort          int    `mapstructure:"SERVER_PORT"`
 		OTELAddress         string `mapstructure:"OTEL_ADDRESS"`
 	}
 
@@ -49,13 +55,56 @@ func main() {
 		"MQ_ROUTING_KEY":  "",
 		"MQ_EXCHANGE":     "",
 		"MQ_QUEUE_PREFIX": "usvc-message-consumer",
+		"SERVER_IP":       "0.0.0.0",
+		"SERVER_PORT":     8080,
 		"OTEL_ADDRESS":    "http://pyroscope:4040",
 	}); err != nil {
 		slog.Error(err.Error())
 
-		os.Exit(1)
+		os.Exit(100)
 	}
 
+	slog.SetDefault(slog.With(
+		slog.String("build_name", buildName),
+		slog.String("build_version", buildVersion),
+	))
+
+	slog.Info("service started",
+		slog.String("build_commit", buildCommit),
+		slog.Any("settings", s),
+	)
+
+	startObservability(s)
+	startMessageConsumer(s)
+	startHealthz(s)
+
+	<-make(chan interface{})
+}
+
+func startHealthz(s Settings) {
+	h, err := health.New(
+		health.WithSystemInfo(),
+		health.WithComponent(health.Component{
+			Name:    buildName + " - " + buildCommit,
+			Version: buildVersion,
+		}),
+	)
+	if err != nil {
+		slog.Error("failed to initialise health handler",
+			slog.String("error", err.Error()),
+		)
+
+		os.Exit(200)
+	}
+
+	server.New(s.ServerPort, map[string]http.HandlerFunc{
+		"/healthz": h.HandlerFunc,
+	}).Run()
+
+	slog.Info("server started")
+}
+
+func startObservability(s Settings) {
 	runtime.SetMutexProfileFraction(5)
 	runtime.SetBlockProfileRate(5)
 
@@ -86,25 +135,32 @@ func main() {
 			slog.String("error", err.Error()),
 		)
 
-		os.Exit(2)
+		os.Exit(300)
 	}
 
-	slog.Info("service started",
-		slog.String("build_name", buildName),
-		slog.String("build_version", buildVersion),
-		slog.String("build_commit", buildCommit),
-		slog.Any("settings", s),
-	)
+	slog.Info("observability started")
+}
 
-	rabbit.NewConsumer(
-		rabbit.NewConnection(s.RabbitMQAddress),
-		s.RabbitMQExchange,
-		s.RabbitMQRoutingKey,
-		fmt.Sprintf("%s.%s", s.RabbitMQQueuePrefix, uuid.NewString()),
-		handleMessage,
-	)
+func startMessageConsumer(s Settings) {
+	conn, err := rabbit.NewConnection(s.RabbitMQAddress)
+	if err != nil {
+		os.Exit(400)
+	}
 
-	<-make(chan interface{})
+	go func() {
+		if err = rabbit.RunConsumer(
+			conn,
+			s.RabbitMQExchange,
+			s.RabbitMQRoutingKey,
+			fmt.Sprintf("%s.%s", s.RabbitMQQueuePrefix, uuid.NewString()),
+			handleMessage,
+			context.Background(),
+		); err != nil {
+			os.Exit(401)
+		}
+	}()
+
+	slog.Info("message consumer started")
 }
 
 func handleMessage(d rabbitmq.Delivery) (action rabbitmq.Action) {
