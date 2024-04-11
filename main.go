@@ -21,7 +21,8 @@ import (
 )
 
 var (
-	buildName    = "api-message-generator"
+	serviceName  = "message-consumer"
+	buildName    = "usvc-message-consumer"
 	buildVersion = "dev"
 	buildCommit  = "n/a"
 )
@@ -109,7 +110,7 @@ func startObservability(s Settings) {
 	runtime.SetBlockProfileRate(5)
 
 	if _, err := pyroscope.Start(pyroscope.Config{
-		ApplicationName: "message-consumer", // todo: figure out what the nicest way is to set an application name
+		ApplicationName: serviceName,
 		ServerAddress:   s.OTELAddress,
 		Logger:          nil,
 		Tags: map[string]string{
