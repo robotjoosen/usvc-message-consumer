@@ -50,6 +50,13 @@ type (
 )
 
 func main() {
+	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	slog.SetDefault(log.With(
+		slog.String("build_name", buildName),
+		slog.String("build_version", buildVersion),
+	))
+
 	s := Settings{}
 	if _, err := config.Load(&s, map[string]any{
 		"MQ_ADDRESS":      "",
@@ -64,11 +71,6 @@ func main() {
 
 		os.Exit(100)
 	}
-
-	slog.SetDefault(slog.With(
-		slog.String("build_name", buildName),
-		slog.String("build_version", buildVersion),
-	))
 
 	slog.Info("service started",
 		slog.String("build_commit", buildCommit),
