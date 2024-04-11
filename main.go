@@ -3,10 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/grafana/pyroscope-go"
 	"log/slog"
+	_ "net/http/pprof"
 	"os"
+	"runtime"
 
 	"github.com/google/uuid"
+	_ "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
 	"github.com/robotjoosen/usvc-message-consumer/pkg/config"
 	"github.com/robotjoosen/usvc-message-consumer/pkg/rabbit"
 	"github.com/wagslane/go-rabbitmq"
@@ -24,6 +28,7 @@ type (
 		RabbitMQRoutingKey  string `mapstructure:"MQ_ROUTING_KEY"`
 		RabbitMQExchange    string `mapstructure:"MQ_EXCHANGE"`
 		RabbitMQQueuePrefix string `mapstructure:"MQ_QUEUE_PREFIX"`
+		OTELAddress         string `mapstructure:"OTEL_ADDRESS"`
 	}
 
 	Record struct {
@@ -44,10 +49,44 @@ func main() {
 		"MQ_ROUTING_KEY":  "",
 		"MQ_EXCHANGE":     "",
 		"MQ_QUEUE_PREFIX": "usvc-message-consumer",
+		"OTEL_ADDRESS":    "http://pyroscope:4040",
 	}); err != nil {
 		slog.Error(err.Error())
 
 		os.Exit(1)
+	}
+
+	runtime.SetMutexProfileFraction(5)
+	runtime.SetBlockProfileRate(5)
+
+	if _, err := pyroscope.Start(pyroscope.Config{
+		ApplicationName: "message-consumer", // todo: figure out what the nicest way is to set an application name
+		ServerAddress:   s.OTELAddress,
+		Logger:          pyroscope.StandardLogger,
+		Tags: map[string]string{
+			"name":    buildName,
+			"version": buildVersion,
+			"commit":  buildCommit,
+		},
+		ProfileTypes: []pyroscope.ProfileType{
+			pyroscope.ProfileCPU,
+			pyroscope.ProfileAllocObjects,
+			pyroscope.ProfileAllocSpace,
+			pyroscope.ProfileInuseObjects,
+			pyroscope.ProfileInuseSpace,
+
+			pyroscope.ProfileGoroutines,
+			pyroscope.ProfileMutexCount,
+			pyroscope.ProfileMutexDuration,
+			pyroscope.ProfileBlockCount,
+			pyroscope.ProfileBlockDuration,
+		},
+	}); err != nil {
+		slog.Error("failed to start pyroscope",
+			slog.String("error", err.Error()),
+		)
+
+		os.Exit(2)
 	}
 
 	slog.Info("service started",
