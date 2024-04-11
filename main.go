@@ -62,7 +62,7 @@ func main() {
 	if _, err := pyroscope.Start(pyroscope.Config{
 		ApplicationName: "message-consumer", // todo: figure out what the nicest way is to set an application name
 		ServerAddress:   s.OTELAddress,
-		Logger:          pyroscope.StandardLogger,
+		Logger:          nil,
 		Tags: map[string]string{
 			"name":    buildName,
 			"version": buildVersion,
