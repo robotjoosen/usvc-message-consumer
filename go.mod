@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/google/uuid v1.6.0
 	github.com/grafana/pyroscope-go v1.1.1
-	github.com/grafana/pyroscope-go/godeltaprof v0.1.6
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.8
 	github.com/hellofresh/health-go/v5 v5.5.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/viper v1.18.2
@@ -17,7 +17,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.4 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
